@@ -124,6 +124,7 @@ app.post("/signup", (req, res) => {
               return res.status(500).json({ error: err.code });
             }
           });
+        
         return;
       }
     })
@@ -131,6 +132,43 @@ app.post("/signup", (req, res) => {
       console.error(err.code);
       return res.status(500).json({ error: err.code });
     });
+  
+  return;
+});
+
+app.post("/login", (req, res) => {
+  const user = {
+    email: req.body.email,
+    password: req.body.password,
+  };
+
+  let errors: any = {};
+
+  // email validation
+  if (isEmpty(user.email)) errors.email = "Must not be empty";
+  else if (!isEmail(user.email)) errors.email = "Must be a valid email";
+  // password validation
+  if (isEmpty(user.password)) errors.password = "Must not be empty";
+
+  if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(user.email, user.password)
+    .then((data) => {
+      return data.user?.getIdToken();
+    })
+    .then((token) => {
+      return res.status(200).json({ token });
+    })
+    .catch((err) => {
+      console.error(err);
+      if(err.code === "auth/wrong-password") {
+          return res.status(403).json({general : 'Wrong credentials, please try again'});
+      }
+      else return res.status(500).json({ error: err.code });
+    });
+
   return;
 });
 
