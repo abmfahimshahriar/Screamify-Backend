@@ -115,9 +115,9 @@ export const uploadImage = (req: any, res: any) => {
       encoding: any,
       mimetype: any
     ) => {
-      console.log(fieldname);
-      console.log(filename);
-      console.log(mimetype);
+      if(mimetype !== 'image/jpeg' && mimetype !== 'image/png') {
+        return res.status(400).json({error : 'Wrong file type submitted'});
+      }
       const imageExtension = filename.split(".")[
         filename.split(".").length - 1
       ];
