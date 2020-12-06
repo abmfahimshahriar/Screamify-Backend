@@ -1,8 +1,15 @@
-import { db } from "../util/admin";
+import { admin, db } from "../util/admin";
 import firebase from "firebase";
 import { firebaseConfig } from "../util/config";
 import { validateSignupData, validateLoginData } from "../util/validators";
+
+const Busboy = require("busboy");
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
+
 firebase.initializeApp(firebaseConfig);
+
 export const signup = (req: any, res: any) => {
   const newUser = {
     email: req.body.email,
@@ -13,6 +20,8 @@ export const signup = (req: any, res: any) => {
 
   const { valid, errors } = validateSignupData(newUser);
   if (!valid) return res.status(400).json(errors);
+
+  const noImg = 'no-img.png';
 
   let token: any;
   let userId;
@@ -33,6 +42,7 @@ export const signup = (req: any, res: any) => {
               handle: newUser.handle,
               email: newUser.email,
               createdAt: new Date().toISOString(),
+              imageUrl: `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${noImg}?alt=media`,
               userId,
             };
             return db.doc(`/users/${newUser.handle}`).set(userCredentials);
@@ -88,4 +98,63 @@ export const login = (req: any, res: any) => {
     });
 
   return;
+};
+
+export const uploadImage = (req: any, res: any) => {
+  const busboy = new Busboy({ headers: req.headers });
+
+  let imageFileName:any;
+  let imageToBeUploaded: any = {};
+
+  busboy.on(
+    "file",
+    (
+      fieldname: any,
+      file: any,
+      filename: any,
+      encoding: any,
+      mimetype: any
+    ) => {
+      console.log(fieldname);
+      console.log(filename);
+      console.log(mimetype);
+      const imageExtension = filename.split(".")[
+        filename.split(".").length - 1
+      ];
+      imageFileName = `${Math.round(
+        Math.random() * 1000000000
+      )}.${imageExtension}`;
+      const filepath = path.join(os.tmdir(), imageFileName);
+      imageToBeUploaded = {
+        filepath,
+        mimetype,
+      };
+      file.pipe(fs.createWriteStream(filepath));
+    }
+  );
+
+  busboy.on("finish", () => {
+    admin
+      .storage()
+      .bucket()
+      .upload(imageToBeUploaded.filepath, {
+        resumable: false,
+        metadata: {
+          metadata: {
+            comtentType: imageToBeUploaded.mimetype,
+          },
+        },
+      })
+      .then(() => {
+        const iamgeUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${imageFileName}?alt=media`;
+        return db.doc(`/users/${req.user.handle}`).update({iamgeUrl});
+      })
+      .then(() => {
+        return res.status(200).json({message: 'Image uploaded successfully.'});
+      })
+      .catch(err => {
+        console.error(err);
+        return res.status(500).json({ error: err.code});
+      })
+  });
 };

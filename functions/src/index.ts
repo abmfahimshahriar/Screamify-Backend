@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as express from "express";
 import { getAllScreams, postOneScream } from "../handlers/screams";
-import { signup, login } from "../handlers/users";
+import { signup, login, uploadImage } from "../handlers/users";
 import { FBAuth } from "../util/fbAuth";
 
 const app = express();
@@ -10,9 +10,9 @@ const app = express();
 app.get("/screams", getAllScreams);
 app.post("/scream", FBAuth, postOneScream);
 
-// authentication routes
+// users routes
 app.post("/signup", signup);
-
 app.post("/login", login);
+app.post("/user/image",FBAuth, uploadImage)
 
 exports.api = functions.https.onRequest(app);
