@@ -124,7 +124,7 @@ export const uploadImage = (req: any, res: any) => {
       imageFileName = `${Math.round(
         Math.random() * 1000000000
       )}.${imageExtension}`;
-      const filepath = path.join(os.tmdir(), imageFileName);
+      const filepath = path.join(os.tmpdir(), imageFileName);
       imageToBeUploaded = {
         filepath,
         mimetype,
@@ -146,8 +146,8 @@ export const uploadImage = (req: any, res: any) => {
         },
       })
       .then(() => {
-        const iamgeUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${imageFileName}?alt=media`;
-        return db.doc(`/users/${req.user.handle}`).update({iamgeUrl});
+        const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${imageFileName}?alt=media`;
+        return db.doc(`/users/${req.user.handle}`).update({imageUrl});
       })
       .then(() => {
         return res.status(200).json({message: 'Image uploaded successfully.'});
@@ -157,4 +157,5 @@ export const uploadImage = (req: any, res: any) => {
         return res.status(500).json({ error: err.code});
       })
   });
+  busboy.end(req.rawBody);
 };
