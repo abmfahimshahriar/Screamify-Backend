@@ -101,8 +101,8 @@ export const login = (req: any, res: any) => {
 };
 
 // add user details
-export const addUserDetails = (res:any,req:any) => {
-   let userDetails = reduceUserDetails(res.body);
+export const addUserDetails = (req:any,res:any) => {
+   let userDetails = reduceUserDetails(req.body);
 
    db.doc(`/users/${req.user.handle}`).update(userDetails)
     .then(() => {
@@ -114,7 +114,7 @@ export const addUserDetails = (res:any,req:any) => {
     })
 }
 
-
+// upload image
 export const uploadImage = (req: any, res: any) => {
   const busboy = new Busboy({ headers: req.headers });
 
