@@ -100,6 +100,11 @@ export const login = (req: any, res: any) => {
   return;
 };
 
+export const addUserDetails = (res:any,req:any) => {
+   
+}
+
+
 export const uploadImage = (req: any, res: any) => {
   const busboy = new Busboy({ headers: req.headers });
 
