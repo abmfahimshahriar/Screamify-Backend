@@ -1,7 +1,7 @@
 import { admin, db } from "../util/admin";
 import firebase from "firebase";
 import { firebaseConfig } from "../util/config";
-import { validateSignupData, validateLoginData } from "../util/validators";
+import { validateSignupData, validateLoginData, reduceUserDetails} from "../util/validators";
 
 const Busboy = require("busboy");
 const path = require("path");
@@ -100,8 +100,18 @@ export const login = (req: any, res: any) => {
   return;
 };
 
+// add user details
 export const addUserDetails = (res:any,req:any) => {
-   
+   let userDetails = reduceUserDetails(res.body);
+
+   db.doc(`/users/${req.user.handle}`).update(userDetails)
+    .then(() => {
+      return res.status(201).json({message: 'User updated sucessfully'});
+    })
+    .catch(err => {
+      console.error(err);
+      return res.status(500).json({error: err.code});
+    })
 }
 
 
