@@ -1,7 +1,11 @@
 import { admin, db } from "../util/admin";
 import firebase from "firebase";
 import { firebaseConfig } from "../util/config";
-import { validateSignupData, validateLoginData, reduceUserDetails} from "../util/validators";
+import {
+  validateSignupData,
+  validateLoginData,
+  reduceUserDetails,
+} from "../util/validators";
 
 const Busboy = require("busboy");
 const path = require("path");
@@ -21,7 +25,7 @@ export const signup = (req: any, res: any) => {
   const { valid, errors } = validateSignupData(newUser);
   if (!valid) return res.status(400).json(errors);
 
-  const noImg = 'no-img.png';
+  const noImg = "no-img.png";
 
   let token: any;
   let userId;
@@ -101,49 +105,53 @@ export const login = (req: any, res: any) => {
 };
 
 // add user details
-export const addUserDetails = (req:any,res:any) => {
-   let userDetails = reduceUserDetails(req.body);
+export const addUserDetails = (req: any, res: any) => {
+  let userDetails = reduceUserDetails(req.body);
 
-   db.doc(`/users/${req.user.handle}`).update(userDetails)
+  db.doc(`/users/${req.user.handle}`)
+    .update(userDetails)
     .then(() => {
-      return res.status(201).json({message: 'User updated sucessfully'});
+      return res.status(201).json({ message: "User updated sucessfully" });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
-      return res.status(500).json({error: err.code});
-    })
-}
-
+      return res.status(500).json({ error: err.code });
+    });
+};
 
 // get user details
-export const getAuthenticatedUser = (req:any,res:any) => {
-  let userData:any = {};
-  db.doc(`/users/${req.user.handle}`).get()
-    .then(doc => {
-      if(doc.exists) {
+export const getAuthenticatedUser = (req: any, res: any) => {
+  let userData: any = {};
+  db.doc(`/users/${req.user.handle}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
         userData.credentials = doc.data();
-        return db.collection('likes').where('userHandle','==',req.user.handle).get();
+        return db
+          .collection("likes")
+          .where("userHandle", "==", req.user.handle)
+          .get();
       }
       return;
     })
-    .then(data => {
+    .then((data) => {
       userData.likes = [];
-      data?.forEach(doc => {
+      data?.forEach((doc) => {
         userData.likes.push(doc.data());
       });
       return res.status(200).json(userData);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
-      return res.status(500).json({error: err.code});
+      return res.status(500).json({ error: err.code });
     });
-}
+};
 
 // upload image
 export const uploadImage = (req: any, res: any) => {
   const busboy = new Busboy({ headers: req.headers });
 
-  let imageFileName:any;
+  let imageFileName: any;
   let imageToBeUploaded: any = {};
 
   busboy.on(
@@ -155,8 +163,8 @@ export const uploadImage = (req: any, res: any) => {
       encoding: any,
       mimetype: any
     ) => {
-      if(mimetype !== 'image/jpeg' && mimetype !== 'image/png') {
-        return res.status(400).json({error : 'Wrong file type submitted'});
+      if (mimetype !== "image/jpeg" && mimetype !== "image/png") {
+        return res.status(400).json({ error: "Wrong file type submitted" });
       }
       const imageExtension = filename.split(".")[
         filename.split(".").length - 1
@@ -187,15 +195,17 @@ export const uploadImage = (req: any, res: any) => {
       })
       .then(() => {
         const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${imageFileName}?alt=media`;
-        return db.doc(`/users/${req.user.handle}`).update({imageUrl});
+        return db.doc(`/users/${req.user.handle}`).update({ imageUrl });
       })
       .then(() => {
-        return res.status(200).json({message: 'Image uploaded successfully.'});
+        return res
+          .status(200)
+          .json({ message: "Image uploaded successfully." });
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
-        return res.status(500).json({ error: err.code});
-      })
+        return res.status(500).json({ error: err.code });
+      });
   });
   busboy.end(req.rawBody);
 };
