@@ -1,6 +1,11 @@
 import * as functions from "firebase-functions";
 import * as express from "express";
-import { getAllScreams, postOneScream } from "../handlers/screams";
+import {
+  getAllScreams,
+  postOneScream,
+  getScream,
+  commentOnScream,
+} from "../handlers/screams";
 import {
   signup,
   login,
@@ -15,7 +20,8 @@ const app = express();
 // screams routes
 app.get("/screams", getAllScreams);
 app.post("/scream", FBAuth, postOneScream);
-
+app.get("/scream/:screamId", getScream);
+app.post("scream/:screamId/comment", FBAuth, commentOnScream);
 // users routes
 app.post("/signup", signup);
 app.post("/login", login);
