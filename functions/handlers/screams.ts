@@ -73,6 +73,31 @@ export const getScream = (req: any, res: any) => {
     });
 };
 
+// delete a scream
+export const deleteScream = (req: any, res: any) => {
+  const document = db.doc(`/screams/${req.params.screamId}`);
+
+  document
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.json(404).json({ error: "Scream not found" });
+      }
+      if (doc.data()!.userHandle !== req.user.handle) {
+        return res.status(403).json({ error: "Unauthorized" });
+      } else {
+        return document.delete();
+      }
+    })
+    .then(() => {
+      res.json({ message: "Scream Deleted successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
 // comment on a scream
 export const commentOnScream = (req: any, res: any) => {
   if (req.body.body.trim() === "")
@@ -106,6 +131,7 @@ export const commentOnScream = (req: any, res: any) => {
     });
 };
 
+/// like a scream
 export const likeScream = (req: any, res: any) => {
   const likeDocument = db
     .collection("likes")
@@ -157,6 +183,7 @@ export const likeScream = (req: any, res: any) => {
     });
 };
 
+// unlike a scream
 export const unlikeScream = (req: any, res: any) => {
   const likeDocument = db
     .collection("likes")
