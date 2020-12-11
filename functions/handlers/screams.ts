@@ -68,4 +68,32 @@ export const getScream = (req: any, res: any) => {
     });
 };
 
-export const commentOnScream = (req: any, res: any) => {};
+// comment on a scream
+export const commentOnScream = (req: any, res: any) => {
+  if (res.body.body.trim() === "")
+    res.status(400).json({ error: "Must not be empty" });
+
+  const newComment: any = {
+    body: req.body.body,
+    createdAt: new Date().toISOString(),
+    screamId: req.params.screamId,
+    userHandle: req.user.handle,
+    userImage: req.user.imageUrl,
+  };
+  console.log(newComment);
+  db.doc(`/screams/${req.params.screamId}`)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        res.status(404).json({ error: "Scream not found" });
+      }
+      return db.collection("comments").add(newComment);
+    })
+    .then(() => {
+      res.json(newComment);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: 'Something went wrong.' });
+    });
+};
