@@ -81,7 +81,7 @@ export const deleteScream = (req: any, res: any) => {
     .get()
     .then((doc) => {
       if (!doc.exists) {
-        return res.json(404).json({ error: "Scream not found" });
+        return res.status(404).json({ error: "Scream not found" });
       }
       if (doc.data()!.userHandle !== req.user.handle) {
         return res.status(403).json({ error: "Unauthorized" });
