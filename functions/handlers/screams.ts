@@ -92,6 +92,9 @@ export const commentOnScream = (req: any, res: any) => {
       if (!doc.exists) {
         res.status(404).json({ error: "Scream not found" });
       }
+      return doc.ref.update({ commentCount: doc.data()!.commentCount + 1 });
+    })
+    .then(() => {
       return db.collection("comments").add(newComment);
     })
     .then(() => {
@@ -103,12 +106,10 @@ export const commentOnScream = (req: any, res: any) => {
     });
 };
 
-
-
 export const likeScream = (req: any, res: any) => {
   const likeDocument = db
     .collection("likes")
-    .where("userHandle", "==", req.user.userHandle)
+    .where("userHandle", "==", req.user.handle)
     .where("screamId", "==", req.params.screamId)
     .limit(1);
 
@@ -156,4 +157,50 @@ export const likeScream = (req: any, res: any) => {
     });
 };
 
-export const unlikeScream = (req: any, res: any) => {};
+export const unlikeScream = (req: any, res: any) => {
+  const likeDocument = db
+    .collection("likes")
+    .where("userHandle", "==", req.user.handle)
+    .where("screamId", "==", req.params.screamId)
+    .limit(1);
+
+  const screamDocument = db.doc(`/screams/${req.params.screamId}`);
+  let screamData: any;
+
+  screamDocument
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        screamData = doc.data();
+        screamData.screamId = doc.id;
+        return likeDocument.get();
+      } else {
+        res.status(404).json({ error: "Scream not found" });
+        return;
+      }
+    })
+    .then((data) => {
+      if (data?.empty) {
+        return res.status(400).json({ error: "scream already unliked" });
+      } else {
+        return db
+          .doc(`/likes/${data?.docs[0].id}`)
+          .delete()
+          .then(() => {
+            screamData.likeCount--;
+            return screamDocument.update({ likeCount: screamData.likeCount });
+          })
+          .then(() => {
+            res.json(screamData);
+          })
+          .catch((err) => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
+          });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
