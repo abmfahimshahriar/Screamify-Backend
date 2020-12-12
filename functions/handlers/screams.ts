@@ -12,6 +12,9 @@ export const getAllScreams = (req: any, res: any) => {
           body: doc.data().body,
           userHandle: doc.data().userHandle,
           createdAt: doc.data().createdAt,
+          commentCount: doc.data().commentCount,
+          likeCount: doc.data().likeCount,
+          userImage: doc.data().userImage,
         });
       });
 
@@ -101,7 +104,7 @@ export const deleteScream = (req: any, res: any) => {
 // comment on a scream
 export const commentOnScream = (req: any, res: any) => {
   if (req.body.body.trim() === "")
-    res.status(400).json({ error: "Must not be empty" });
+    res.status(400).json({ comment: "Must not be empty" });
 
   const newComment: any = {
     body: req.body.body,
