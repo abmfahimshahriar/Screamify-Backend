@@ -132,15 +132,14 @@ export const getUserDetails = (req: any, res: any) => {
           .where("userHandle", "==", req.params.handle)
           .orderBy("createdAt", "desc")
           .get();
-      }
-      else {
+      } else {
         //return res.status(404).json({message : 'User not found'});
       }
       return;
     })
-    .then(data => {
+    .then((data) => {
       userData.screams = [];
-      data?.forEach(doc => {
+      data?.forEach((doc) => {
         userData.screams.push({
           body: doc.data().body,
           createdAt: doc.data().createdAt,
@@ -148,21 +147,34 @@ export const getUserDetails = (req: any, res: any) => {
           userImage: doc.data().body,
           likeCount: doc.data().likeCount,
           commentCount: doc.data().commentCount,
-          screamId: doc.id
+          screamId: doc.id,
         });
       });
       return res.json(userData);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
-      return res.status(500).json({error : err.code});
-    })
+      return res.status(500).json({ error: err.code });
+    });
 };
 
 // mark notifications as read
 export const markNotificationsRead = (req: any, res: any) => {
-
-}
+  let batch = db.batch();
+  req.body.forEach((notificationId: any) => {
+    const notification = db.doc(`/notifications/${notificationId}`);
+    batch.update(notification, { read: true });
+  });
+  batch
+    .commit()
+    .then(() => {
+      return res.json({ message: "Notifications marked as read" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
 
 // get own user details
 export const getAuthenticatedUser = (req: any, res: any) => {
