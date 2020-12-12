@@ -66,6 +66,20 @@ exports.createNotificationOnLike = functions.firestore
       });
   });
 
+exports.deleteNotificationOnUnLike = functions.firestore
+  .document("likes/{id}")
+  .onDelete((snapshot) => {
+    db.doc(`/notifications/${snapshot.id}`)
+      .delete()
+      .then(() => {
+        return;
+      })
+      .catch((err) => {
+        console.error(err);
+        return;
+      });
+  });
+
 exports.createNotificationOnComment = functions.firestore
   .document("comments/{id}")
   .onCreate((snapshot) => {
