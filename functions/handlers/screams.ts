@@ -24,8 +24,8 @@ export const getAllScreams = (req: any, res: any) => {
 };
 
 export const postOneScream = (req: any, res: any) => {
-  if (req.body.body.trim() === '') {
-    return res.status(400).json({ body: 'Body must not be empty' });
+  if (req.body.body.trim() === "") {
+    return res.status(400).json({ body: "Body must not be empty" });
   }
   const newScream: any = {
     body: req.body.body,
@@ -173,6 +173,17 @@ export const likeScream = (req: any, res: any) => {
             return screamDocument.update({ likeCount: screamData.likeCount });
           })
           .then(() => {
+            return db
+              .collection("comments")
+              .orderBy("createdAt", "desc")
+              .where("screamId", "==", req.params.screamId)
+              .get();
+          })
+          .then((data) => {
+            screamData.comments = [];
+            data.forEach((doc) => {
+              screamData.comments.push(doc.data());
+            });
             return res.json(screamData);
           })
           .catch((err) => {
