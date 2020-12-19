@@ -126,37 +126,48 @@ exports.onUserImageChange = functions.firestore
             const scream = db.doc(`/screams/${doc.id}`);
             batch.update(scream, { userImage: change.after.data().imageUrl });
           });
-          return batch.commit();
+          return data;
+        })
+        .then(() => {
+          return db
+            .collection("comments")
+            .where("userHandle", "==", change.before.data().handle)
+            .get()
+            .then((data) => {
+              data.forEach((doc) => {
+                const scream = db.doc(`/comments/${doc.id}`);
+                batch.update(scream, {
+                  userImage: change.after.data().imageUrl,
+                });
+              });
+              return batch.commit();
+            });
         });
     } else return true;
   });
 
-
-  exports.onScreamDelete = functions
-  .firestore.document('/screams/{screamId}')
+exports.onScreamDelete = functions.firestore
+  .document("/screams/{screamId}")
   .onDelete((snapshot, context) => {
     const screamId = context.params.screamId;
     const batch = db.batch();
     return db
-      .collection('comments')
-      .where('screamId', '==', screamId)
+      .collection("comments")
+      .where("screamId", "==", screamId)
       .get()
       .then((data) => {
         data.forEach((doc) => {
           batch.delete(db.doc(`/comments/${doc.id}`));
         });
-        return db
-          .collection('likes')
-          .where('screamId', '==', screamId)
-          .get();
+        return db.collection("likes").where("screamId", "==", screamId).get();
       })
       .then((data) => {
         data.forEach((doc) => {
           batch.delete(db.doc(`/likes/${doc.id}`));
         });
         return db
-          .collection('notifications')
-          .where('screamId', '==', screamId)
+          .collection("notifications")
+          .where("screamId", "==", screamId)
           .get();
       })
       .then((data) => {

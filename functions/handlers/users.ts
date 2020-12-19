@@ -144,7 +144,7 @@ export const getUserDetails = (req: any, res: any) => {
           body: doc.data().body,
           createdAt: doc.data().createdAt,
           userHandle: doc.data().userHandle,
-          userImage: doc.data().body,
+          userImage: doc.data().userImage,
           likeCount: doc.data().likeCount,
           commentCount: doc.data().commentCount,
           screamId: doc.id,
