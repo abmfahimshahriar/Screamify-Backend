@@ -20,8 +20,10 @@ import {
   markNotificationsRead,
 } from "../handlers/users";
 import { FBAuth } from "../util/fbAuth";
+import * as cors from "cors";
 
 const app = express();
+app.use(cors());
 
 // screams routes
 app.get("/screams", getAllScreams);
